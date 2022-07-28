@@ -35,6 +35,8 @@ type expr =
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
               
+  | Question of expr * expr * expr
+                
 type tenv = (ident * tipo) list
 
 type valor =
@@ -61,16 +63,13 @@ let rec update a k i =
 (* exceções que não devem ocorrer  *)
 
 exception BugParser
-  
 exception BugTypeInfer
   
   (**+++++++++++++++++++++++++++++++++++++++++*)
 (*         INFERÊNCIA DE TIPOS              *)
 (*++++++++++++++++++++++++++++++++++++++++++*)
 
-
 exception TypeError of string
-
 
 let rec typeinfer (tenv:tenv) (e:expr) : tipo =
   match e with
@@ -147,13 +146,20 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
       else raise (TypeError "tipo da funcao diferente do declarado")
   | LetRec _ -> raise BugParser
                   
+  (* TQuestion  *)     
+  | Question(e1, e2, e3) -> 
+      (match typeinfer tenv e1 with
+         TyInt -> 
+           let t2 = typeinfer tenv e2 in
+           let t3 = typeinfer tenv e3
+           in if (t2 = t3 && t2 = TyBool) then TyBool 
+           else raise (TypeError "últimos operandos de ? inválidos")
+       | _ -> raise (TypeError "primeiro operando de ? não é do tipo int"))
+      
   
 (**+++++++++++++++++++++++++++++++++++++++++*)
 (*                 AVALIADOR                *)
 (*++++++++++++++++++++++++++++++++++++++++++*)
-
-
-
 
 let compute (oper: op) (v1: valor) (v2: valor) : valor =
   match (oper, v1, v2) with
@@ -230,8 +236,23 @@ let rec eval (renv:renv) (e:expr) : valor =
       let renv'= update renv f (VRclos(f,x,e1,renv))
       in eval renv' e2
         
-        
   | LetRec _ -> raise BugParser
+
+  | Question(e1, e2, e3) ->
+      (match eval renv e1 with
+          VNum(value1) -> 
+            (match value1 with
+              0 -> 
+                (match eval renv e2 with
+                    VTrue -> eval renv e3
+                  | VFalse -> VFalse
+                  | _ -> raise BugTypeInfer)
+            | _ -> 
+                (match eval renv e2 with 
+                    VTrue -> VTrue
+                  | VFalse -> eval renv e3
+                  | _ -> raise BugTypeInfer))
+        | _ -> raise BugTypeInfer)
                   
                   
 (* função auxiliar que converte tipo para string *)
