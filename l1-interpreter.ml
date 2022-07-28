@@ -33,9 +33,10 @@ type expr =
   | Fn of ident * tipo * expr
   | App of expr * expr
   | Let of ident * tipo * expr * expr
-  | LetRec of ident * tipo * expr  * expr
+  | LetRec of ident * tipo * expr  * expr 
               
   | Question of expr * expr * expr
+  | Dollar of expr * expr
                 
 type tenv = (ident * tipo) list
 
@@ -65,9 +66,9 @@ let rec update a k i =
 exception BugParser
 exception BugTypeInfer
   
-  (**+++++++++++++++++++++++++++++++++++++++++*)
+(**+++++++++++++++++++++++++++++++++++++++++*)
 (*         INFERÊNCIA DE TIPOS              *)
-(*++++++++++++++++++++++++++++++++++++++++++*)
+(*++++++++++++++++++++++++++++++++++++++++++*) 
 
 exception TypeError of string
 
@@ -144,8 +145,8 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
       if (typeinfer tenv_com_tf_tx e1) = t2
       then typeinfer tenv_com_tf e2
       else raise (TypeError "tipo da funcao diferente do declarado")
-  | LetRec _ -> raise BugParser
-                  
+  | LetRec _ -> raise BugParser 
+                                
   (* TQuestion  *)     
   | Question(e1, e2, e3) -> 
       (match typeinfer tenv e1 with
@@ -153,13 +154,21 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
            let t2 = typeinfer tenv e2 in
            let t3 = typeinfer tenv e3
            in if (t2 = t3 && t2 = TyBool) then TyBool 
-           else raise (TypeError "últimos operandos de ? inválidos")
+           else raise (TypeError "tipos inválidos para os últimos operandos de ?")
        | _ -> raise (TypeError "primeiro operando de ? não é do tipo int"))
-      
-  
+                
+  (* TDollar  *)     
+  | Dollar(e1, e2) ->
+      (match typeinfer tenv e1 with
+         TyBool -> 
+           (match typeinfer tenv e2 with
+              TyInt -> TyInt
+            | _ -> raise (TypeError "segundo operando de $ não é do tipo int"))
+       | _ -> raise (TypeError "primeiro operando de $ não é do tipo bool"))
+        
 (**+++++++++++++++++++++++++++++++++++++++++*)
 (*                 AVALIADOR                *)
-(*++++++++++++++++++++++++++++++++++++++++++*)
+(*++++++++++++++++++++++++++++++++++++++++++*) 
 
 let compute (oper: op) (v1: valor) (v2: valor) : valor =
   match (oper, v1, v2) with
@@ -234,27 +243,41 @@ let rec eval (renv:renv) (e:expr) : valor =
 
   | LetRec(f,TyFn(t1,t2),Fn(x,tx,e1), e2) when t1 = tx ->
       let renv'= update renv f (VRclos(f,x,e1,renv))
-      in eval renv' e2
-        
+      in eval renv' e2 
   | LetRec _ -> raise BugParser
 
   | Question(e1, e2, e3) ->
       (match eval renv e1 with
-          VNum(value1) -> 
-            (match value1 with
+         VNum(value1) -> 
+           let v2 = eval renv e2 in
+           let v3 = eval renv e3 in
+           (match value1 with
               0 -> 
-                (match eval renv e2 with
-                    VTrue -> eval renv e3
-                  | VFalse -> VFalse
-                  | _ -> raise BugTypeInfer)
+                (match v2 with
+                   VTrue -> v3
+                 | VFalse -> VFalse
+                 | _ -> raise BugTypeInfer)
             | _ -> 
-                (match eval renv e2 with 
-                    VTrue -> VTrue
-                  | VFalse -> eval renv e3
-                  | _ -> raise BugTypeInfer))
-        | _ -> raise BugTypeInfer)
-                  
-                  
+                (match v2 with 
+                   VTrue -> VTrue
+                 | VFalse -> v3
+                 | _ -> raise BugTypeInfer))
+       | _ -> raise BugTypeInfer)
+           
+  | Dollar(e1,e2) -> 
+    let v1 = eval renv e1 in
+    let v2 = 
+      (match eval renv e2 with 
+         VNum(value) -> value
+       | _ -> raise BugTypeInfer) in
+    (match v1 with
+       VTrue -> VNum(v2+1)
+     | VFalse -> 
+         (match v2 with
+            0 -> VNum(0)
+          | _ -> VNum(v2-1))
+     | _ -> raise BugTypeInfer)
+  
 (* função auxiliar que converte tipo para string *)
 
 let rec ttos (t:tipo) : string =
@@ -300,11 +323,11 @@ let int_bse (e:expr) : unit =
 
 
 (*
-     let x:int = 2 
-     in let foo: int --> int = fn y:int => x + y 
-        in let x: int = 5
-           in foo 10 
-*)
+let x:int = 2 
+in let foo: int --> int = fn y:int => x + y 
+in let x: int = 5
+in foo 10 
+   *)
 
 let e'' = Let("x", TyInt, Num 5, App(Var "foo", Num 10))
 
@@ -325,3 +348,5 @@ let e2 = Let("x", TyInt, Num 5, Var "foo")
 let e1  = Let("foo", TyFn(TyInt,TyInt), Fn("y", TyInt, Binop(Sum, Var "x", Var "y")), e2)
 
 let tst2 = Let("x", TyInt, Num(2), e1) 
+
+let tst3 = Dollar(Num 5, Num 2)
