@@ -85,9 +85,9 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
   | Binop(operation,e1,e2) ->
       let type1 = typeinfer tenv e1 in
       let type2 = typeinfer tenv e2 in
-      
+
       (match (type1, type2) with
-        (TyInt, TyInt) -> 
+        (TyInt, TyInt) ->
           (match operation with
             Sum | Sub | Mult         -> TyInt
             | Eq | Lt | Gt | Geq | Leq -> TyBool)
@@ -127,15 +127,15 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
     (* TApp *)
   | App(e1,e2) ->
       (match typeinfer tenv e1 with
-        TyFn(t, t') -> 
-          if (typeinfer tenv e2) = t 
+        TyFn(t, t') ->
+          if (typeinfer tenv e2) = t
             then t'
             else raise (TypeError "tipo argumento errado para app" )
        | _ -> raise (TypeError "tipo função era esperado para App"))
 
     (* TLet *)
   | Let(x,t,e1,e2) ->
-      if (typeinfer tenv e1) = t 
+      if (typeinfer tenv e1) = t
         then typeinfer (update tenv x t) e2
         else raise (TypeError "expr nao é do tipo declarado em Let" )
 
@@ -146,9 +146,9 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
       if (typeinfer tenv_com_tf_tx e1) = t2
         then typeinfer tenv_com_tf e2
         else raise (TypeError "tipo da funcao diferente do declarado")
-  
+
   | LetRec _ -> raise BugParser
-(* 
+(*
   (* TQuestion  *)
   | Question(e1, e2, e3) ->
       (match typeinfer tenv e1 with
@@ -181,12 +181,12 @@ let rec compute (operation: op) (v1: valor) (v2: valor) : valor =
   | (Mult, VNum(n1), VNum(n2)) -> VNum (n1 * n2)
 
   (* relational *)
-  | (Eq,  VNum(n1), VNum(n2)) -> if (n1 = n2)  then VTrue else VFalse
-  | (Gt,  VNum(n1), VNum(n2)) -> if (n1 > n2)  then VTrue else VFalse
-  | (Lt,  VNum(n1), VNum(n2)) -> if (n1 < n2)  then VTrue else VFalse
-  | (Geq, VNum(n1), VNum(n2)) -> if (n1 >= n2) then VTrue else VFalse
-  | (Leq, VNum(n1), VNum(n2)) -> if (n1 <= n2) then VTrue else VFalse
-  
+  | (Eq,  VNum(n1), VNum(n2)) -> VBool(n1 = n2)
+  | (Gt,  VNum(n1), VNum(n2)) -> VBool(n1 > n2)
+  | (Lt,  VNum(n1), VNum(n2)) -> VBool(n1 < n2)
+  | (Geq, VNum(n1), VNum(n2)) -> VBool(n1 >= n2)
+  | (Leq, VNum(n1), VNum(n2)) -> VBool(n1 <= n2)
+
   | _ -> raise BugTypeInfer
 
 
@@ -225,9 +225,9 @@ let rec eval (renv:renv) (e:expr) : valor =
 
   | If(e1,e2,e3) ->
       (match eval renv e1 with
-        VTrue  -> eval renv e2
-       | VFalse -> eval renv e3
-       | _ -> raise BugTypeInfer )
+        VBool true   -> eval renv e2
+       | VBool false -> eval renv e3
+       | _ -> raise BugTypeInfer)
 
   | Fn (x,_,e1) ->  VClos(x,e1,renv)
 
