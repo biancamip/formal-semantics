@@ -3,5 +3,5 @@
 ```
 docker build -t ocaml-build .
 
-docker run --name ocaml -it ocaml-build
+docker run -v C:\git\personal\formal-semantics\src:/ocaml-src --name ocaml -it ocaml-build
 ```
