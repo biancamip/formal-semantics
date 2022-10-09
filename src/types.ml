@@ -48,6 +48,6 @@ and
 exception TypeError of string
 
 (* bugs *)
-exception NotImplemented
+exception NotImplemented of string
 exception BugParser
 exception BugTypeInfer
