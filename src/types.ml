@@ -4,6 +4,10 @@ type tipo =
   | TyBool
   | TyFn of tipo * tipo
   | TyPair of tipo * tipo
+  
+  (* extensões *)
+  | TyRef of tipo
+  | TyUnit
 
 type op = Sum | Sub | Mult | Eq | Gt | Lt | Geq | Leq
 
@@ -21,20 +25,29 @@ type expr =
   | Let of ident * tipo * expr * expr
   | LetRec of ident * tipo * expr  * expr
 
+  (* extensões *)
+  | Asg of expr * expr
+  | Dref of expr
+  | New of expr
+  | Seq of expr * expr
+  | Whl of expr * expr
+  | Skip
+
 type tenv = (ident * tipo) list
 
 type valor =
   | VNum of int
   | VBool of bool
+  | VUnit of unit
   | VPair of valor * valor
   | VClos  of ident * expr * renv
   | VRclos of ident * ident * expr * renv
 and
   renv = (ident * valor) list
-  
-(* warn user *)
+
 exception TypeError of string
 
-(* these should never be raised  *)
+(* bugs *)
+exception NotImplemented
 exception BugParser
 exception BugTypeInfer

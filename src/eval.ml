@@ -1,5 +1,5 @@
 
-let rec compute (operation: op) (v1: valor) (v2: valor) : valor =
+let rec computeBinOp (operation: op) (v1: valor) (v2: valor) : valor =
   match (operation, v1, v2) with
 
   (* arithmetic *)
@@ -31,7 +31,7 @@ let rec eval (renv:renv) (e:expr) : valor =
   | Binop(operand,e1,e2) ->
       let v1 = eval renv e1 in
       let v2 = eval renv e2 in
-      compute operand v1 v2
+      computeBinOp operand v1 v2
 
 
   | Pair(e1,e2) ->
@@ -52,7 +52,7 @@ let rec eval (renv:renv) (e:expr) : valor =
 
   | If(e1,e2,e3) ->
       (match eval renv e1 with
-        VBool true   -> eval renv e2
+         VBool true   -> eval renv e2
        | VBool false -> eval renv e3
        | _ -> raise BugTypeInfer)
 
@@ -62,7 +62,7 @@ let rec eval (renv:renv) (e:expr) : valor =
       let v1 = eval renv e1 in
       let v2 = eval renv e2 in
       (match v1 with
-        VClos(x,ebdy,renv') ->
+         VClos(x,ebdy,renv') ->
           let renv'' = update renv' x v2
           in eval renv'' ebdy
 
@@ -81,3 +81,11 @@ let rec eval (renv:renv) (e:expr) : valor =
       let renv'= update renv f (VRclos(f,x,e1,renv))
       in eval renv' e2
   | LetRec _ -> raise BugParser
+
+  | Skip -> VUnit ()
+  
+  | Asg (_, _)
+  | Dref _
+  | New _
+  | Seq (_, _)
+  | Whl (_, _) -> raise NotImplemented

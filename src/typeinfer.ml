@@ -88,3 +88,12 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
         else raise (TypeError "tipo da funcao diferente do declarado")
 
   | LetRec _ -> raise BugParser
+
+  | Skip -> TyUnit
+  
+  | Asg (_, _)
+  | Dref _
+  | New _
+  | Seq (_, _)
+  | Whl (_, _) -> raise NotImplemented
+  
