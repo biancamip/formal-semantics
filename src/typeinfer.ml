@@ -1,4 +1,3 @@
-
 let rec lookup a k =
   match a with
     [] -> None

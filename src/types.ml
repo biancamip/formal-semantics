@@ -8,6 +8,8 @@ type tipo =
   (* extensões *)
   | TyRef of tipo
   | TyUnit
+  
+type tenv = (ident * tipo) list
 
 type op = Sum | Sub | Mult | Eq | Gt | Lt | Geq | Leq
 
@@ -33,8 +35,6 @@ type expr =
   | Whl of expr * expr
   | Skip
 
-type tenv = (ident * tipo) list
-
 type valor =
   | VNum of int
   | VBool of bool
@@ -44,6 +44,9 @@ type valor =
   | VRclos of ident * ident * expr * renv
 and
   renv = (ident * valor) list
+
+type address = int
+type memory = (address * valor) list
 
 exception TypeError of string
 

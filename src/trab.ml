@@ -3,15 +3,15 @@
 #use "types.ml"
 #use "typeinfer.ml"
 #use "eval.ml"
-
 #use "auxFns.ml"
 
 (* main *)
-let bse (e:expr) : unit =
+let bse (e:expr) (mem: memory) : unit =
   try
     let typ = typeinfer [] e in
-    let value = eval [] e
-    in  print_string ((vtos value) ^ " : " ^ (ttos typ))
+    let (value, memory) = eval [] e mem in
+      print_string ("VALUE: " ^ (vtos value) ^ ": " ^ (ttos typ) ^
+                    "\nMEMORY: [" ^ (mtos memory) ^ "]\n ")
   with
     TypeError msg -> print_string ("[erro de tipo] " ^ msg)
 

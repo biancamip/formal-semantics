@@ -17,73 +17,74 @@ let rec computeBinOp (operation: op) (v1: valor) (v2: valor) : valor =
   | _ -> raise BugTypeInfer
 
 
-let rec eval (renv:renv) (e:expr) : valor =
+let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
   match e with
 
-    Num n -> VNum n
-  | Bcte b -> VBool b
+    Num n -> (VNum n, mem)
+  | Bcte b -> (VBool b, mem)
 
   | Var x ->
       (match lookup renv x with
-        Some v -> v
+        Some v -> (v, mem)
        | None -> raise BugTypeInfer)
 
   | Binop(operand,e1,e2) ->
-      let v1 = eval renv e1 in
-      let v2 = eval renv e2 in
-      computeBinOp operand v1 v2
+      let (value1, mem1) = eval renv e1 mem in
+      let (value2, mem2) = eval renv e2 mem1 in
+        ((computeBinOp operand value1 value2), mem2)
 
-
-  | Pair(e1,e2) ->
-      let v1 = eval renv e1 in
-      let v2 = eval renv e2
-      in VPair(v1,v2)
+  | Pair(e1, e2) ->
+      let (value1, mem1) = eval renv e1 mem in
+      let (value2, mem2) = eval renv e2 mem1 in
+        (VPair(value1, value2), mem2)
 
   | Fst e ->
-      (match eval renv e with
-        VPair(v1,_) -> v1
-       | _ -> raise BugTypeInfer)
+      let (value, memRes) = eval renv e mem in
+      (match value with
+          VPair(v1, _) -> (v1, memRes)
+        | _ -> raise BugTypeInfer)
 
   | Snd e ->
-      (match eval renv e with
-        VPair(_,v2) -> v2
+      let (value, memRes) = eval renv e mem in
+      (match value with
+          VPair(_, v2) -> (v2, memRes)
+        | _ -> raise BugTypeInfer)
+
+  | If(e1, e2, e3) ->
+      let (value1, mem1) = eval renv e1 mem in
+      (match value1 with
+         VBool true  -> eval renv e2 mem1
+       | VBool false -> eval renv e3 mem1
        | _ -> raise BugTypeInfer)
 
+  | Fn(x,_,e1) -> (VClos(x,e1,renv), mem)
 
-  | If(e1,e2,e3) ->
-      (match eval renv e1 with
-         VBool true   -> eval renv e2
-       | VBool false -> eval renv e3
-       | _ -> raise BugTypeInfer)
-
-  | Fn (x,_,e1) ->  VClos(x,e1,renv)
-
-  | App(e1,e2) ->
-      let v1 = eval renv e1 in
-      let v2 = eval renv e2 in
-      (match v1 with
+  | App(e1, e2) ->
+      let (value1, mem1) = eval renv e1 mem in
+      let (value2, mem2) = eval renv e2 mem1 in
+      (match value1 with
          VClos(x,ebdy,renv') ->
-          let renv'' = update renv' x v2
-          in eval renv'' ebdy
+          let renv'' = update renv' x value2
+          in eval renv'' ebdy mem2
 
        | VRclos(f,x,ebdy,renv') ->
-          let renv''  = update renv' x v2 in
-          let renv''' = update renv'' f v1
-          in eval renv''' ebdy
+          let renv''  = update renv' x value2 in
+          let renv''' = update renv'' f value1
+          in eval renv''' ebdy mem2
 
        | _ -> raise BugTypeInfer)
 
-  | Let(x,_,e1,e2) ->
-      let v1 = eval renv e1
-      in eval (update renv x v1) e2
+  | Let(x, _, e1, e2) ->
+      let (value1, mem1) = eval renv e1 mem
+      in eval (update renv x value1) e2 mem1
 
   | LetRec(f, TyFn(t1,t2), Fn(x,tx,e1), e2) when t1 = tx ->
       let renv'= update renv f (VRclos(f,x,e1,renv))
-      in eval renv' e2
+      in eval renv' e2 mem
   | LetRec _ -> raise BugParser
 
-  | Skip -> VUnit ()
-  
+  | Skip -> (VUnit (), mem)
+
   | Asg (_, _) -> raise (NotImplemented "Asg")
   | Dref _     -> raise (NotImplemented "Dref")
   | New _      -> raise (NotImplemented "New")
