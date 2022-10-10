@@ -90,9 +90,10 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
 
   | Skip -> TyUnit
   
+  | Whl (_, _) -> raise (NotImplemented "Whl")
+
   | Asg (_, _) -> raise (NotImplemented "Asg")
   | Dref _     -> raise (NotImplemented "Dref")
   | New _      -> raise (NotImplemented "New")
   | Seq (_, _) -> raise (NotImplemented "Seq")
-  | Whl (_, _) -> raise (NotImplemented "Whl")
   

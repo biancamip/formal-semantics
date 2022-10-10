@@ -83,10 +83,23 @@ let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
       in eval renv' e2 mem
   | LetRec _ -> raise BugParser
 
+  (* skip;e2, σ −→ e2, σ *)
   | Skip -> (VUnit (), mem)
+
+  (* while e1 do e2, σ −→ if e1 then (e2;while e1 do e2) else skip, σ *)
+  | Whl (e1, e2) -> 
+    let (value1, mem1) = eval renv e1 mem in
+    (match value1 with
+      VBool true -> eval renv Seq(e2, Whl(e1,e1)) mem1
+      | VBool false -> eval renv Skip mem1
+          
+      | raise BugTypeInfer)
+  
+  | Seq (e1, e2) -> 
+    (* TODO: o que fazer com value1? *)
+    let (value1, mem1) = eval renv e1 mem in
+      eval renv e2 mem1
 
   | Asg (_, _) -> raise (NotImplemented "Asg")
   | Dref _     -> raise (NotImplemented "Dref")
   | New _      -> raise (NotImplemented "New")
-  | Seq (_, _) -> raise (NotImplemented "Seq")
-  | Whl (_, _) -> raise (NotImplemented "Whl")

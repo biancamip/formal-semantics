@@ -48,10 +48,7 @@ let e2 = Let("x", TyInt, Num 5, Var "foo")
 let e1  = Let("foo", TyFn(TyInt,TyInt), Fn("y", TyInt, Binop(Sum, Var "x", Var "y")), e2)
 let tst2 = Let("x", TyInt, Num(2), e1)
 
-let tstSkip = If(Binop(Gt, Num 8, Num 0),
-            Skip,
-            Skip)
-
+let tstSkip = If(Binop(Gt, Num 8, Num 0), Skip, Skip)
 
 (*  o programa abaixo retorna
         valor   = 7
