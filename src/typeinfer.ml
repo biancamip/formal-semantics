@@ -90,10 +90,20 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
 
   | Skip -> TyUnit
   
-  | Whl (_, _) -> raise (NotImplemented "Whl")
+  | Whl (e1, e2) -> 
+    (match typeinfer tenv e1 with
+        TyBool -> 
+          (match typeinfer tenv e2 with
+              TyUnit -> TyUnit
+            | _ -> raise (TypeError "e2 de Whl não é do tipo unit"))
+      | _ -> raise (TypeError "condição de Whl não é do tipo bool"))
 
+  | Seq (e1, e2) -> 
+    (match typeinfer tenv e1 with
+        TyUnit -> typeinfer tenv e2
+      | _ -> raise (TypeError "e1 de Seq não é do tipo bool"))
+  
   | Asg (_, _) -> raise (NotImplemented "Asg")
   | Dref _     -> raise (NotImplemented "Dref")
   | New _      -> raise (NotImplemented "New")
-  | Seq (_, _) -> raise (NotImplemented "Seq")
   
