@@ -90,14 +90,16 @@ let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
   | Whl (e1, e2) -> 
     let (value1, mem1) = eval renv e1 mem in
     (match value1 with
-        VBool true -> eval renv Seq(e2, Whl(e1,e1)) mem1
+        VBool true -> 
+          let exp = Seq(e2, Whl(e1,e2))
+          in eval renv exp mem1
       | VBool false -> eval renv Skip mem1
-      | raise BugTypeInfer)
+      | _ -> raise BugTypeInfer)
   
   | Seq (e1, e2) -> 
     let (value1, mem1) = eval renv e1 mem in
     (match value1 with
-        Skip -> eval renv e2 mem1
+        VUnit _ -> eval renv e2 mem1
       | _ -> raise BugTypeInfer)
 
   | Asg (_, _) -> raise (NotImplemented "Asg")

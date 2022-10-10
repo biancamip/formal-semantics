@@ -2,11 +2,12 @@
 (* type to string *)
 let rec ttos (t: tipo) : string =
   match t with
-    TyInt         -> "int"
-  | TyBool        -> "bool"
-  | TyUnit        -> "unit"
-  | TyFn(t1,t2)   -> "("  ^ (ttos t1) ^ " --> " ^ (ttos t2) ^ ")"
-  | TyPair(t1,t2) -> "("  ^ (ttos t1) ^ " * "   ^ (ttos t2) ^ ")"
+    TyInt           -> "int"
+  | TyBool          -> "bool"
+  | TyUnit          -> "unit"
+  | TyRef (t1)      -> "(ref of" ^ (ttos t1) ^ ")"
+  | TyFn (t1, t2)   -> "("  ^ (ttos t1) ^ " --> " ^ (ttos t2) ^ ")"
+  | TyPair (t1, t2) -> "("  ^ (ttos t1) ^ " * "   ^ (ttos t2) ^ ")"
 
 (* valor to string *)
 let rec vtos (v: valor) : string =

@@ -6,5 +6,5 @@ configuração pra desenvolvimento em windows:
 
 ```
 docker build -t ocaml-build .
-docker run -v C:\git\personal\formal-semantics\src:/ocaml-src --name ocaml -it --rm ocaml-build
+docker run -v C:\git\formal-semantics\src:/ocaml-src --name ocaml -it --rm ocaml-build
 ```
