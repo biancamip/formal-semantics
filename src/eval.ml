@@ -87,21 +87,21 @@ let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
   | Skip -> (VUnit (), mem)
 
   (* while e1 do e2, σ −→ if e1 then (e2;while e1 do e2) else skip, σ *)
-  | Whl (e1, e2) -> 
+  | Whl (e1, e2) ->
     let (value1, mem1) = eval renv e1 mem in
     (match value1 with
-        VBool true -> 
+        VBool true ->
           let exp = Seq(e2, Whl(e1,e2))
           in eval renv exp mem1
       | VBool false -> eval renv Skip mem1
       | _ -> raise BugTypeInfer)
-  
-  | Seq (e1, e2) -> 
+
+  | Seq (e1, e2) ->
     let (value1, mem1) = eval renv e1 mem in
     (match value1 with
         VUnit _ -> eval renv e2 mem1
       | _ -> raise BugTypeInfer)
 
-  | Asg (_, _) -> raise (NotImplemented "Asg")
-  | Dref _     -> raise (NotImplemented "Dref")
-  | New _      -> raise (NotImplemented "New")
+  | New _      -> raise (NotImplemented "eval New")
+  | Asg (_, _) -> raise (NotImplemented "eval Asg")
+  | Dref _     -> raise (NotImplemented "eval Dref")

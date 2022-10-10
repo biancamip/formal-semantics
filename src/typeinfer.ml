@@ -5,6 +5,11 @@ let rec lookup a k =
 
 let update a k i = (k,i) :: a
 
+let rec length (mem: memory) : int =
+  (match mem with
+    (k, v)::tail -> 1 + length tail
+    | [] -> 0)
+
 let rec typeinfer (tenv:tenv) (e:expr) : tipo =
   match e with
 
@@ -85,25 +90,42 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
       if (typeinfer tenv_com_tf_tx e1) = t2
         then typeinfer tenv_com_tf e2
         else raise (TypeError "tipo da funcao diferente do declarado")
-
   | LetRec _ -> raise BugParser
 
+    (* TSkip *)
   | Skip -> TyUnit
-  
-  | Whl (e1, e2) -> 
+
+    (* TWhile *)
+  | Whl (e1, e2) ->
     (match typeinfer tenv e1 with
-        TyBool -> 
+        TyBool ->
           (match typeinfer tenv e2 with
               TyUnit -> TyUnit
             | _ -> raise (TypeError "e2 de Whl não é do tipo unit"))
       | _ -> raise (TypeError "condição de Whl não é do tipo bool"))
 
-  | Seq (e1, e2) -> 
+    (* TSeq *)
+  | Seq (e1, e2) ->
     (match typeinfer tenv e1 with
         TyUnit -> typeinfer tenv e2
       | _ -> raise (TypeError "e1 de Seq não é do tipo bool"))
-  
-  | Asg (_, _) -> raise (NotImplemented "Asg")
-  | Dref _     -> raise (NotImplemented "Dref")
-  | New _      -> raise (NotImplemented "New")
-  
+
+    (* TNew *)
+  | New e -> TyRef(typeinfer tenv e)
+
+    (* TDeref *)
+  | Dref e ->
+    (match typeinfer tenv e with
+        TyRef(typ) -> typ
+      | _ -> raise (TypeError "expressão para Dref não é do tipo ref"))
+
+    (* TAtr *)
+  | Asg (e1, e2) ->
+    let type1 = typeinfer tenv e1 in
+    (match type1 with
+        TyRef(typ) ->
+          let type2 = typeinfer tenv e2 in
+          if typ = type2
+            then TyUnit
+            else raise (TypeError "tipos diferentes para Asg")
+      | _ -> raise (TypeError "e1 para Asg não é do tipo ref"))
