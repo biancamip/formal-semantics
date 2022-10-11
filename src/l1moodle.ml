@@ -1,3 +1,5 @@
+(* Código do interpretador de L1 exatamente como foi disponibilizado no moodle, para referência *)
+
 (*++++++++++++++++++++++++++++++++++++++*)
 (*  Interpretador para L1               *)
 (*  - inferência de tipos (monomórfica  *)

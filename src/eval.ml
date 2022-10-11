@@ -114,11 +114,8 @@ let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
     (match valueAddr with
       VAddress addr ->
         let (value, mem2) = eval renv e2 mem1 in
-        (VUnit (), mem2)
-        (* TODO make this work *)
-        (* refreshMemAddr mem2 addr value *)
-      | _ -> raise (RefError "e1 de Asg não é do tipo endereço")
-    )
+          refreshMemAddr mem2 addr value
+      | _ -> raise (RefError "e1 de Asg não é do tipo endereço"))
 
   | Dref e ->
     let (valueAddr, mem1) = eval renv e mem in

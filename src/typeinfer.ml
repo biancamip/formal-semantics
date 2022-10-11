@@ -10,8 +10,14 @@ let rec memLength (mem: memory) : int =
     (k, v)::tail -> 1 + memLength tail
     | [] -> 0)
 
-(* let rec refreshMemAddr (mem: memory) (addr: address) (value: valor) : (valor * memory) = 
-  (value, mem) *)
+let rec refreshMemAddr (mem: memory) (addr: address) (newValue: valor) : (valor * memory) = 
+  (match mem with
+      [] -> (VUnit (), [])
+    | (key, value)::tail when key=addr -> (VUnit (), (addr, newValue) :: tail)
+    | (key, value)::tail -> 
+      (match (refreshMemAddr tail addr newValue) with
+          (_, tailRefreshed) -> (VUnit (), (key, value) :: tailRefreshed)
+        | _ -> raise BugParser))
 
 let rec typeinfer (tenv:tenv) (e:expr) : tipo =
   match e with
@@ -132,3 +138,4 @@ let rec typeinfer (tenv:tenv) (e:expr) : tipo =
             then TyUnit
             else raise (TypeError "tipos diferentes para Asg")
       | _ -> raise (TypeError "e1 para Asg não é do tipo ref"))
+      

@@ -146,4 +146,11 @@ let whilefat = Whl(Binop(Gt, Dref (Var "z"), Num 0),
 let bodyfat = Let("z", TyRef TyInt, New (Var "x"),
                   Let("y", TyRef TyInt, New (Num 1), Seq (whilefat, Dref (Var "y"))))
 
-let impfat = Let("fat", TyFn(TyInt,TyInt), Fn("x", TyInt, bodyfat), App(Var "fat", Num 5))
+(* esperado: 120 *)
+let impfat5 = Let("fat", TyFn(TyInt,TyInt), Fn("x", TyInt, bodyfat), App(Var "fat", Num 5))
+
+(* esperado: 40320 *)
+let impfat8 = Let("fat", TyFn(TyInt,TyInt), Fn("x", TyInt, bodyfat), App(Var "fat", Num 8))
+
+(* esperado: 6 *)
+let impfat3 = Let("fat", TyFn(TyInt,TyInt), Fn("x", TyInt, bodyfat), App(Var "fat", Num 3))
