@@ -1,14 +1,17 @@
-let rec lookup a k =
-  match a with
+let rec lookup list key =
+  match list with
     [] -> None
-  | (y,i) :: tl -> if (y=k) then Some i else lookup tl k
+  | (k,v) :: tl -> if (k=key) then Some v else lookup tl key
 
-let update a k i = (k,i) :: a
+let update list key value = (key,value) :: list
 
-let rec length (mem: memory) : int =
+let rec memLength (mem: memory) : int =
   (match mem with
-    (k, v)::tail -> 1 + length tail
+    (k, v)::tail -> 1 + memLength tail
     | [] -> 0)
+
+(* let rec refreshMemAddr (mem: memory) (addr: address) (value: valor) : (valor * memory) = 
+  (value, mem) *)
 
 let rec typeinfer (tenv:tenv) (e:expr) : tipo =
   match e with

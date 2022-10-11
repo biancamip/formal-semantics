@@ -18,6 +18,7 @@ let rec vtos (v: valor) : string =
   | VPair(v1, v2) -> "(" ^ vtos v1 ^ "," ^ vtos v1 ^ ")"
   | VClos _ ->  "fn"
   | VRclos _ -> "fn"
+  | VAddress addr -> "*" ^ string_of_int addr
 
 (* mem to string *)
 let rec mtos (mem: memory) : string =

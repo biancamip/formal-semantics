@@ -16,8 +16,8 @@ let bse (e:expr) (mem: memory) : unit =
     TypeError msg -> print_string ("[erro de tipo] " ^ msg)
 
   | NotImplemented msg -> print_string ("[bug - missing implementation of " ^ msg ^ "]")
-  | BugTypeInfer    -> print_string "[bug - typeinfer] "
-  | BugParser       -> print_string "[bug - parser] "
+  | BugTypeInfer msg -> print_string ("[bug - typeinfer] " ^ msg)
+  | BugParser -> print_string "[bug - parser] "
 
 (* +++++++++++++++++++++++++++++++++++++++*)
 (*                TESTES                  *)
