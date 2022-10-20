@@ -1,8 +1,10 @@
 ## semântica formal 22/1
 
-Implementação da função principal bse (big step evaluator) e testes sugeridos no arquivo trab.ml
+OCaml interpreter for L1 lang (based on [UFRGS comp sci](https://www.inf.ufrgs.br/site/en)'s formal semantics course) with extensions (adds memory, variable allocations, derefs, while&seq operations).
 
-configuração pra desenvolvimento em windows:
+You can find the big step evaluator function (bse) + tests on file trab.ml
+
+docker setup with ocaml because I was using windows for some reason:
 
 ```
 docker build -t ocaml-build .
