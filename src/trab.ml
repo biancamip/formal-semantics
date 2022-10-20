@@ -10,7 +10,7 @@ let bse (e:expr) (mem: memory) : unit =
   try
     let typ = typeinfer [] e in
     let (value, memory) = eval [] e mem in
-      print_string ("VALUE: " ^ (vtos value) ^ ": " ^ (ttos typ) ^
+      print_string ("\nVALUE: " ^ (vtos value) ^ ": " ^ (ttos typ) ^
                     "\nMEMORY: [" ^ (mtos memory) ^ "]\n ")
   with
     TypeError msg -> print_string ("[erro de tipo] " ^ msg)

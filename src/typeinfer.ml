@@ -5,6 +5,11 @@ let rec lookup list key =
 
 let update list key value = (key,value) :: list
 
+let getNextAddress (mem: memory) : int = 
+  (match mem with
+    (k, v)::tail -> k + 1
+    | [] -> 0)
+
 let rec memLength (mem: memory) : int =
   (match mem with
     (k, v)::tail -> 1 + memLength tail

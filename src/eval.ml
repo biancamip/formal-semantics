@@ -105,7 +105,7 @@ let rec eval (renv: renv) (e: expr) (mem: memory) : (valor * memory) =
 
   | New e1 ->
     let (value, mem1) = eval renv e1 mem in
-    let addr = memLength mem in
+    let addr = getNextAddress mem in
     let mem2 = update mem1 addr value in
       ((VAddress addr), mem2)
 
